@@ -1,0 +1,10 @@
+tensorflow==2.11.0
+numpy>=1.26.4
+nltk>=3.6.3
+Pillow>=10.2.0 
+matplotlib>=3.8.3 
+tqdm>=4.66.2
+googletrans==4.0.0rc1
+streamlit==1.22.0
+gtts==2.5.1
+gdown
