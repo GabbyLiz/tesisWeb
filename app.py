@@ -34,7 +34,6 @@ enlace_google_drive = 'https://drive.google.com/uc?id=1NNw7-bCVLEYNKH4Q6rnwXCRkx
 output_file_path = 'pesos.hdf5'
 gdown.download(enlace_google_drive, output_file_path, quiet=False)
 # Cargar el modelo con los pesos
-modelo_cargado = load_model('pesos.hdf5')
 
 
 # Definir el modelo CNN (inceptionv3, vgg16, resnet50)
@@ -202,7 +201,7 @@ def add_bg_from_local(image_file):
     if app_mode == 'Modelo 1':
         model_type = 'vgg16'
         max_length_model = 34
-        model_load_path = modelo_cargado
+        model_load_path = 'pesos.hdf5'
         tokenizer_path1 = 'tokenizer.pkl'
 
     # Solicitar al usuario una imagen del tipo "jpg", "jpeg", "webp"
