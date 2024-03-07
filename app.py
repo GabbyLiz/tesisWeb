@@ -206,18 +206,17 @@ def add_bg_from_local(image_file):
     st.header("_Al ingresar una imagen obtendrá una descripción general_")
 
     # Configurar la barra lateral para despliegue de modelos (4 en total)
-    st.sidebar.title('Modelos')
+    st.sidebar.title('Modelo')
     st.sidebar.subheader(
         'Los modelos pre-entrenados varían la calidad de detección, dependiendo de la configuración de cada uno en el entrenamiento de la red')
 
-    app_mode = st.sidebar.selectbox('Seleccione uno de los siguientes modelos para la detección',
-                                    ['Modelo 1'])
-    if app_mode == 'Modelo 1':
-        model_type = 'vgg16'
-        max_length_model = 34
+
 
     # Solicitar al usuario una imagen del tipo "jpg", "jpeg", "webp"
     uploaded_image = st.file_uploader("Seleccione una imagen de su dispositivo a continuación: ", type=["jpg", "jpeg", "webp"])
+    
+    model_type = 'vgg16'
+    max_length_model = 34
 
     if uploaded_image is not None:
         img = load_image(uploaded_image)
