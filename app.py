@@ -29,7 +29,7 @@ import os
 
 translator = Translator()
 # Enlace compartido de Google Drive al archivo HDF5 (reemplaza 'your_file_id')
-enlace_google_drive = 'https://drive.google.com/uc?id=1xcvKb0Uqu5iVuNcKt_ry57J7GCm3TN3w'
+enlace_google_drive = 'https://drive.google.com/uc?id=1ToHLk2LDeI4th9f7pOfM_IrB5k7PyIif'
 # Descargar el archivo desde Google Drive
 output_file_path = 'pesos.hdf5'
 gdown.download(enlace_google_drive, output_file_path, quiet=False)
