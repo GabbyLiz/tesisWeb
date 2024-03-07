@@ -32,7 +32,7 @@ translator = Translator()
 enlace_google_drive = 'https://drive.google.com/uc?id=1NNw7-bCVLEYNKH4Q6rnwXCRkxa2IHAka'
 # Descargar el archivo desde Google Drive
 output_file_path = 'pesos.hdf5'
-gdown.download(enlace_google_drive, output_file_path, quiet=False)
+gdown.download(enlace_google_drive, output_file_path, quiet=False, confirm=True)
 # Cargar el modelo con los pesos
 
 
