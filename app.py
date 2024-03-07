@@ -26,7 +26,7 @@ import streamlit as st
 # Librerías necesarias para descargar y cargar pesos desde Google Drive 
 import gdown
 import os 
-
+os.environ["CUDA_VISIBLE_DEVICES"] = "-1"
 translator = Translator()
 
 # Variable de bandera para verificar si el código ya se ejecutó
