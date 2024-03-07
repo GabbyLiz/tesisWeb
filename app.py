@@ -29,11 +29,6 @@ import os
 
 translator = Translator()
 
-# Función para cargar imágenes
-def load_image(image_file):
-    with Image.open(image_file) as img:
-        return img
-
 # Variable de bandera para verificar si el código ya se ejecutó
 codigo_ejecutado = False
 
@@ -78,6 +73,11 @@ def CNNModel(model_type):
     # Obtener la última capa después de eliminar
     model = Model(inputs=model.inputs, outputs=model.layers[-2].output)
     return model
+
+# Función para cargar imágenes
+def load_image(image_file):
+    img = Image.open(image_file)
+    return img
 
 # Extraer características de la imagen
 def extract_features(filename, model, model_type):
