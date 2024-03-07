@@ -34,10 +34,11 @@ codigo_ejecutado = False
 # Cargar el modelo y el tokenizador al inicio
 caption_model = None
 tokenizer = None
+image_model = None  # Agregamos una variable global para el modelo de imágenes
 
 # Tu aplicación de Python
 def tu_aplicacion():
-    global codigo_ejecutado, tokenizer, codigo_ejecutado
+    global caption_model, tokenizer, image_model, codigo_ejecutado
 
     # Verificar si el código ya se ejecutó
     if not codigo_ejecutado:
@@ -52,6 +53,7 @@ def tu_aplicacion():
         # Cargar el modelo y el tokenizador al inicio
         caption_model = load_model('pesos.hdf5')
         tokenizer = load(open('tokenizer.pkl', 'rb'))
+        image_model = CNNModel('vgg16')  # Inicializar el modelo de imágenes
 
         # Establecer la variable de bandera a True
         codigo_ejecutado = True
@@ -157,7 +159,6 @@ def word_for_id(integer, tokenizer):
 def image_caption(uploaded_image, model_type, caption_model, tokenizer, max_length_model):
     # Longitud máxima de la secuencia (de entrenamiento)
     max_length = max_length_model
-    image_model = CNNModel(model_type)
     # Codificar la imagen mediante el modelo CNN
     image = extract_features(uploaded_image, image_model, model_type)
     # Generar los subtítulos mediante modelo RNN decodificador + búsqueda BEAM
