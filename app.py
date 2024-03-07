@@ -29,6 +29,10 @@ import os
 
 translator = Translator()
 
+# Función para cargar imágenes
+def load_image(image_file):
+    with Image.open(image_file) as img:
+        return img
 
 # Variable de bandera para verificar si el código ya se ejecutó
 codigo_ejecutado = False
@@ -57,7 +61,9 @@ def tu_aplicacion():
 
 # Llamar a tu aplicación
 tu_aplicacion()
-
+# Cargar el modelo y el tokenizador al inicio
+caption_model = load_model('pesos.hdf5')
+tokenizer = load(open('tokenizer.pkl', 'rb'))
 
 # Definir el modelo CNN (inceptionv3, vgg16, resnet50)
 def CNNModel(model_type):
@@ -156,20 +162,12 @@ def word_for_id(integer, tokenizer):
     return None
 
 
-def image_caption(imagen, model_type, model_load_path, tokenizer_path1, max_length_model):
-    # # Cargar el tokenizador
-    tokenizer_path = tokenizer_path1
-    tokenizer = load(open(tokenizer_path, 'rb'))
-
+def image_caption(uploaded_image, model_type, caption_model, tokenizer, max_length_model):
     # Longitud máxima de la secuencia (de entrenamiento)
     max_length = max_length_model
-
-    # Cargar el modelo
-    caption_model = load_model(model_load_path)
-
     image_model = CNNModel(model_type)
     # Codificar la imagen mediante el modelo CNN
-    image = extract_features(imagen, image_model, model_type)
+    image = extract_features(uploaded_image, image_model, model_type)
     # Generar los subtítulos mediante modelo RNN decodificador + búsqueda BEAM
     generated_caption = generate_caption_beam_search(caption_model, tokenizer, image, max_length, beam_index=3)
 
@@ -224,8 +222,6 @@ def add_bg_from_local(image_file):
     if app_mode == 'Modelo 1':
         model_type = 'vgg16'
         max_length_model = 34
-        model_load_path = 'pesos.hdf5'
-        tokenizer_path1 = 'tokenizer.pkl'
 
     # Solicitar al usuario una imagen del tipo "jpg", "jpeg", "webp"
     uploaded_image = st.file_uploader("Seleccione una imagen de su dispositivo a continuación: ", type=["jpg", "jpeg", "webp"])
@@ -237,7 +233,7 @@ def add_bg_from_local(image_file):
         # Mostrar mensaje de éxito si la imagen se cargó correctamente
         st.success("¡Imagen Cargada con éxito!")
         st.info("Generando descripción y audio, por favor espere...")
-        descripcion = image_caption(uploaded_image, model_type, model_load_path, tokenizer_path1, max_length_model)
+        descripcion = image_caption(uploaded_image, model_type, caption_model, tokenizer, max_length_model)
         # Traducir texto de inglés a español
         translation = translator.translate(descripcion, dest='es')
         caption = translation.text
