@@ -31,6 +31,10 @@ translator = Translator()
 
 # Variable de bandera para verificar si el código ya se ejecutó
 codigo_ejecutado = False
+# Cargar el modelo y el tokenizador al inicio
+caption_model = load_model('pesos.hdf5')
+tokenizer = load(open('tokenizer.pkl', 'rb'))
+
 
 # Tu aplicación de Python
 def tu_aplicacion():
@@ -45,20 +49,12 @@ def tu_aplicacion():
         enlace_google_drive = 'https://drive.google.com/uc?id=1FMoVJX2X-pgYV7noOXny6Xnq5lPjJetb'
         # Descargar el archivo desde Google Drive
         output_file_path = 'pesos.hdf5'
-        gdown.download(enlace_google_drive, output_file_path, quiet=False)
+        gdown.download(enlace_google_drive, output_file_path, quiet=True)
 
         # Establecer la variable de bandera a True
         codigo_ejecutado = True
 
-    # Resto de tu aplicación
-    print("Resto de la aplicación")
-    # Aquí colocas el resto de tu código
-
-# Llamar a tu aplicación
-tu_aplicacion()
-# Cargar el modelo y el tokenizador al inicio
-caption_model = load_model('pesos.hdf5')
-tokenizer = load(open('tokenizer.pkl', 'rb'))
+    add_bg_from_local('logo2.png')
 
 # Definir el modelo CNN (inceptionv3, vgg16, resnet50)
 def CNNModel(model_type):
@@ -246,5 +242,6 @@ def add_bg_from_local(image_file):
 
     st.write("Ingresa en el [link](https://github.com/GabbyLiz/ic_web)" + " para ver el código completo")
 
+# Llamar a tu aplicación
+tu_aplicacion()
 
-add_bg_from_local('logo2.png')
