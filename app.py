@@ -28,12 +28,35 @@ import gdown
 import os 
 
 translator = Translator()
-# Enlace compartido de Google Drive al archivo HDF5 (reemplaza 'your_file_id')
-enlace_google_drive = 'https://drive.google.com/uc?id=1ToHLk2LDeI4th9f7pOfM_IrB5k7PyIif'
-# Descargar el archivo desde Google Drive
-output_file_path = 'pesos.hdf5'
-gdown.download(enlace_google_drive, output_file_path, quiet=False)
-# Cargar el modelo con los pesos
+
+
+# Variable de bandera para verificar si el código ya se ejecutó
+codigo_ejecutado = False
+
+# Tu aplicación de Python
+def tu_aplicacion():
+    global codigo_ejecutado
+
+    # Verificar si el código ya se ejecutó
+    if not codigo_ejecutado:
+        # Tu código que se debe ejecutar solo una vez
+        print("Ejecutando código al inicio")
+        
+        # Enlace compartido de Google Drive al archivo HDF5 (reemplaza 'your_file_id')
+        enlace_google_drive = 'https://drive.google.com/uc?id=1ToHLk2LDeI4th9f7pOfM_IrB5k7PyIif'
+        # Descargar el archivo desde Google Drive
+        output_file_path = 'pesos.hdf5'
+        gdown.download(enlace_google_drive, output_file_path, quiet=False)
+
+        # Establecer la variable de bandera a True
+        codigo_ejecutado = True
+
+    # Resto de tu aplicación
+    print("Resto de la aplicación")
+    # Aquí colocas el resto de tu código
+
+# Llamar a tu aplicación
+tu_aplicacion()
 
 
 # Definir el modelo CNN (inceptionv3, vgg16, resnet50)
