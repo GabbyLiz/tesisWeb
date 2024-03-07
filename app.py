@@ -79,12 +79,6 @@ def CNNModel(model_type):
     model = Model(inputs=model.inputs, outputs=model.layers[-2].output)
     return model
 
-
-def load_image(image_file):
-    img = Image.open(image_file)
-    return img
-
-
 # Extraer características de la imagen
 def extract_features(filename, model, model_type):
     if model_type == 'inceptionv3':
