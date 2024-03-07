@@ -43,7 +43,7 @@ def tu_aplicacion():
         print("Ejecutando código al inicio")
         
         # Enlace compartido de Google Drive al archivo HDF5 (reemplaza 'your_file_id')
-        enlace_google_drive = 'https://drive.google.com/uc?id=1ToHLk2LDeI4th9f7pOfM_IrB5k7PyIif'
+        enlace_google_drive = 'https://drive.google.com/uc?id=1FMoVJX2X-pgYV7noOXny6Xnq5lPjJetb'
         # Descargar el archivo desde Google Drive
         output_file_path = 'pesos.hdf5'
         gdown.download(enlace_google_drive, output_file_path, quiet=False)
