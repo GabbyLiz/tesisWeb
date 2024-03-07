@@ -31,10 +31,13 @@ translator = Translator()
 
 # Variable de bandera para verificar si el código ya se ejecutó
 codigo_ejecutado = False
+# Cargar el modelo y el tokenizador al inicio
+caption_model = None
+tokenizer = None
 
 # Tu aplicación de Python
 def tu_aplicacion():
-    global codigo_ejecutado
+    global codigo_ejecutado, tokenizer, codigo_ejecutado
 
     # Verificar si el código ya se ejecutó
     if not codigo_ejecutado:
@@ -53,7 +56,7 @@ def tu_aplicacion():
         # Establecer la variable de bandera a True
         codigo_ejecutado = True
 
-    add_bg_from_local('logo2.png',caption_model,tokenizer)
+    add_bg_from_local('logo2.png')
 
 # Definir el modelo CNN (inceptionv3, vgg16, resnet50)
 def CNNModel(model_type):
@@ -171,7 +174,7 @@ def image_caption(uploaded_image, model_type, caption_model, tokenizer, max_leng
     return caption
 
 
-def add_bg_from_local(image_file,caption_model,tokenizer):
+def add_bg_from_local(image_file):
     with open(image_file, "rb") as image_file:
         encoded_string = base64.b64encode(image_file.read())
     st.markdown(
