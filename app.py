@@ -61,7 +61,7 @@ def CNNModel(model_type):
     if model_type == 'inceptionv3':
         model = InceptionV3()
     elif model_type == 'vgg16':
-        model = 'vgg16_weights_tf_dim_ordering_tf_kernels.h5'
+        model = VGG16()
     elif model_type == 'resnet50':
         model = ResNet50()
     model.layers.pop()
