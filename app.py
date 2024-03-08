@@ -1,66 +1,62 @@
-# Libreria para traduccion de texto
+import gdown
+import requests
+import os
+# libreria para traduccion de texto
 from googletrans import Translator
-# Libreria para transformación de audio
+# libreria para transformación de audio
 from gtts import gTTS
-# Librería para  mantener los datos como bytes en un búfer en memoria
 from io import BytesIO
-# Librería para convertir un objeto arbitrario Python en una serie de bytes
-# Usa la función "load" para cargar los datos desde un archivo
 from pickle import load
-# Libreria para abrir imágenes en varios formatos
 from PIL import Image
-# Librería para desarrollar y evaluar modelos de aprendizaje profundo
 from tensorflow.keras.models import Model
 from tensorflow.keras.models import load_model
-from tensorflow.keras.preprocessing.image import img_to_array
+from tensorflow.keras.preprocessing.image import load_img, img_to_array
 from tensorflow.keras.applications.inception_v3 import InceptionV3
 from tensorflow.keras.applications.vgg16 import VGG16
 from tensorflow.keras.applications.resnet50 import ResNet50
 from tensorflow.keras.preprocessing.sequence import pad_sequences
-# Librería para realizar cálculos matemáticos
 import numpy as np
 # Libreria para colocar imagen de fondo
 import base64
 # Libreria para desarrollar aplicaciones con Streamlit
 import streamlit as st
-# Librerías necesarias para descargar y cargar pesos desde Google Drive 
-import gdown
-import os 
-os.environ["CUDA_VISIBLE_DEVICES"] = "-1"
 translator = Translator()
+model_type = None
+max_length_model = None
+model_load_path = None
+tokenizer_path = None
 
-# Variable de bandera para verificar si el código ya se ejecutó
-codigo_ejecutado = False
-# Cargar el modelo y el tokenizador al inicio
-caption_model = None
-tokenizer = None
-image_model = None  # Agregamos una variable global para el modelo de imágenes
+# Enlace compartido de Google Drive al archivo HDF5 (reemplaza 'your_file_id')
+enlace_google_drive = 'https://drive.google.com/uc?id=1FMoVJX2X-pgYV7noOXny6Xnq5lPjJetb'
 
-# Tu aplicación de Python
-def tu_aplicacion():
-    global caption_model, tokenizer, image_model, codigo_ejecutado
+# Variable de sesión para realizar un seguimiento del estado de la descarga
+descarga_realizada = st.session_state.get('descarga_realizada', False)
 
-    # Verificar si el código ya se ejecutó
-    if not codigo_ejecutado:
-        # Tu código que se debe ejecutar solo una vez
-        print("Ejecutando código al inicio")
-        
-        # Enlace compartido de Google Drive al archivo HDF5 (reemplaza 'your_file_id')
-        enlace_google_drive = 'https://drive.google.com/uc?id=1FMoVJX2X-pgYV7noOXny6Xnq5lPjJetb'
-        # Descargar el archivo desde Google Drive
-        output_file_path = 'pesos.hdf5'
-        gdown.download(enlace_google_drive, output_file_path, quiet=True)
-        # Cargar el modelo y el tokenizador al inicio
-        caption_model = load_model('pesos.hdf5')
-        tokenizer = load(open('tokenizer.pkl', 'rb'))
-        image_model = CNNModel('vgg16')  # Inicializar el modelo de imágenes
+# Crear una sección para cargar una imagen de fondo
+background_image = 'logo2.png'  # Ruta de la imagen de fondo
 
-        # Establecer la variable de bandera a True
-        codigo_ejecutado = True
-
-    add_bg_from_local('logo2.png')
-
-# Definir el modelo CNN (inceptionv3, vgg16, resnet50)
+# Función para cargar la imagen de fondo
+with open('logo2.png', "rb") as image_file:
+    encoded_string = base64.b64encode(image_file.read())
+st.markdown(
+    f"""
+    <style>
+    .stApp {{
+        background-image: url(data:image/{"png"};base64,{encoded_string.decode()});
+        background-size: cover
+    }}
+    </style>
+    """,
+    unsafe_allow_html=True
+)
+hide_streamlit_style = """
+               <style>
+               footer {visibility: hidden;}
+               </style>
+               """
+st.markdown(hide_streamlit_style, unsafe_allow_html=True)
+#
+# Define the CNN model
 def CNNModel(model_type):
     if model_type == 'inceptionv3':
         model = InceptionV3()
@@ -68,13 +64,10 @@ def CNNModel(model_type):
         model = VGG16()
     elif model_type == 'resnet50':
         model = ResNet50()
-    # Eliminar la última capa
     model.layers.pop()
-    # Obtener la última capa después de eliminar
     model = Model(inputs=model.inputs, outputs=model.layers[-2].output)
-    return model
 
-# Función para cargar imágenes
+    return model
 def load_image(image_file):
     img = Image.open(image_file)
     return img
@@ -82,13 +75,13 @@ def load_image(image_file):
 # Extraer características de la imagen
 def extract_features(filename, model, model_type):
     if model_type == 'inceptionv3':
-        from tensorflow.keras.applications.inception_v3 import preprocess_input
+        from keras.applications.inception_v3 import preprocess_input
         target_size = (299, 299)
     elif model_type == 'resnet50':
-        from tensorflow.keras.applications.resnet50 import preprocess_input
+        from keras.applications.resnet50 import preprocess_input
         target_size = (224, 224)
     elif model_type == 'vgg16':
-        from tensorflow.keras.applications.vgg16 import preprocess_input
+        from keras.applications.vgg16 import preprocess_input
         target_size = (224, 224)
     # Cargar y redimensionar la imagen
     image = load_image(filename)
@@ -103,18 +96,15 @@ def extract_features(filename, model, model_type):
     # Pasar la imagen al modelo para obtener características codificadas
     features = model.predict(image, verbose=0)
     return features
-
-
 def generate_caption_beam_search(model, tokenizer, image, max_len, beam_index=3):
+    # start_word --> [[idx,prob]] ;prob=0 initially
     start_word = [[tokenizer.texts_to_sequences(['startseq'])[0], 0.0]]
     while len(start_word[0][0]) < max_len:
         temp = []
         for s in start_word:
-            # Secuencia las palabras más probables
             par_caps = pad_sequences([s[0]], maxlen=max_len)
-            preds = model.predict([image, par_caps], verbose=0)
+            preds = model.predict([image,par_caps], verbose=0)
             # Tomar las mejores predicciones `beam_index` (es decir, las que tienen mayores probabilidades)
-            # La función argsort ordena fácilmente los índices de una matriz dada
             word_preds = np.argsort(preds[0])[-beam_index:]
 
             # Crear una nueva lista para volver a pasarlos por el modelo
@@ -124,7 +114,7 @@ def generate_caption_beam_search(model, tokenizer, image, max_len, beam_index=3)
                 # Actualizar probabilidad
                 prob += preds[0][word]
                 #  Añadir como entrada para generar la siguiente palabra
-                temp.append([next_cap, prob])
+                temp .append([next_cap, prob])
 
         start_word = temp
         # Ordenar según las probabilidades
@@ -132,13 +122,14 @@ def generate_caption_beam_search(model, tokenizer, image, max_len, beam_index=3)
         # Tomar las palabras principales
         start_word = start_word[-beam_index:]
 
+
     start_word = start_word[-1][0]
-    intermediate_caption = [word_for_id(i, tokenizer) for i in start_word]
+    intermediate_caption = [int_to_word(i,tokenizer) for i in start_word]
 
     final_caption = []
 
     for word in intermediate_caption:
-        if word == 'endseq':
+        if word=='endseq':
             break
         else:
             final_caption.append(word)
@@ -146,21 +137,26 @@ def generate_caption_beam_search(model, tokenizer, image, max_len, beam_index=3)
     final_caption.append('endseq')
     return ' '.join(final_caption)
 
-
-# Asignar un número entero a una palabra
-
-def word_for_id(integer, tokenizer):
+# Asigna un número entero a una palabra
+def int_to_word(integer, tokenizer):
     for word, index in tokenizer.word_index.items():
         if index == integer:
             return word
     return None
 
-
-def image_caption(uploaded_image, model_type, caption_model, tokenizer, max_length_model):
+def image_caption(imagen, model_type, model_load_path, tokenizer_path1, max_length_model):
+    # # Cargar el tokenizador
+    tokenizer_path = tokenizer_path1
+    tokenizer = load(open(tokenizer_path, 'rb'))
     # Longitud máxima de la secuencia (de entrenamiento)
     max_length = max_length_model
+
+    # Cargar el modelo
+    caption_model = load_model(model_load_path)
+
+    image_model = CNNModel(model_type)
     # Codificar la imagen mediante el modelo CNN
-    image = extract_features(uploaded_image, image_model, model_type)
+    image = extract_features(imagen, image_model, model_type)
     # Generar los subtítulos mediante modelo RNN decodificador + búsqueda BEAM
     generated_caption = generate_caption_beam_search(caption_model, tokenizer, image, max_length, beam_index=3)
 
@@ -174,76 +170,113 @@ def image_caption(uploaded_image, model_type, caption_model, tokenizer, max_leng
 
     return caption
 
+st.title("Detección de objetos y semántica de una imagen")
 
-def add_bg_from_local(image_file):
-    with open(image_file, "rb") as image_file:
-        encoded_string = base64.b64encode(image_file.read())
-    st.markdown(
-        f"""
-    <style>
-    .css-9ycgxx {{
-        display: none;
-    }}
-    .stApp {{
-        background-image: url(data:image/{"png"};base64,{encoded_string.decode()});
-        background-size: cover
-    }}
-    </style>
-    """,
-        unsafe_allow_html=True
-    )
-    hide_streamlit_style = """
-                <style>
-                footer {visibility: hidden;}
-                </style>
-                """
-    st.markdown(hide_streamlit_style, unsafe_allow_html=True)
-    # ---Estructura de la página---
-
-    # Mostrar texto en formato de título (tema de tesis)
-    st.title("Detección de objetos y semántica de una imagen")
-    # Mostrar texto en formato de subtítulo
-    st.header("_Al ingresar una imagen obtendrá una descripción general_")
-
-    # Configurar la barra lateral para despliegue de modelos (4 en total)
-    st.sidebar.title('Modelo')
-    st.sidebar.subheader(
-        'Los modelos pre-entrenados varían la calidad de detección, dependiendo de la configuración de cada uno en el entrenamiento de la red')
+# Obtener el tamaño original del archivo en bytes
+with st.spinner('Obteniendo información del archivo...'):
+    response = requests.head(enlace_google_drive)
+    file_size_original = int(response.headers['Content-Length'])
 
 
+# Crear una sección para cargar una imagen
+st.header('_Ingrese una imagen para realizar la descripción:_')
 
-    # Solicitar al usuario una imagen del tipo "jpg", "jpeg", "webp"
-    uploaded_image = st.file_uploader("Seleccione una imagen de su dispositivo a continuación: ", type=["jpg", "jpeg", "webp"])
-    
+
+# Crear una barra lateral para las opciones de descarga
+st.sidebar.subheader('Modelos')
+opcion_descarga = st.sidebar.selectbox('Seleccione una opción para escoger el modelo que desea probar:',
+                                       ['Seleccione', 'Modelo 1', 'Modelo 2', 'Modelo 3','Modelo 4'])
+
+# Añadir un botón para cargar la imagen
+imagen_cargada = st.file_uploader('Selecciona una imagen', type=['jpg', 'jpeg', 'png'])
+
+# Tratamiento adicional para cada opción de descarga
+if opcion_descarga == 'Modelo 1':
+    # Tu código específico para la opción 1 aquí
     model_type = 'vgg16'
     max_length_model = 34
+    model_load_path = 'pesos_modelo 1.hdf5'
+    tokenizer_path = 'tokenizer.pkl'
+    st.write('Realizar acciones adicionales para la Opción 1')
 
-    if uploaded_image is not None:
-        img = load_image(uploaded_image)
-        # Mostrar una imagen
-        st.image(img, caption='Imagen seleccionada', use_column_width=True)
-        # Mostrar mensaje de éxito si la imagen se cargó correctamente
-        st.success("¡Imagen Cargada con éxito!")
-        st.info("Generando descripción y audio, por favor espere...")
-        descripcion = image_caption(uploaded_image, model_type, caption_model, tokenizer, max_length_model)
-        # Traducir texto de inglés a español
+elif opcion_descarga == 'Modelo 2':
+    # Tu código específico para la opción 2 aquí
+    model_type = None
+    max_length_model = ''
+    model_load_path = ''
+    tokenizer_path = ''
+    st.write('Realizar acciones adicionales para la Opción 2')
+
+elif opcion_descarga == 'Modelo 3':
+    # Tu código específico para la opción 3 aquí
+    model_type = None
+    max_length_model = ''
+    model_load_path = ''
+    tokenizer_path = ''
+    st.write('Realizar acciones adicionales para la Opción 3')
+
+elif opcion_descarga == 'Modelo 4':
+    # Tu código específico para la opción 4 aquí
+    model_type = None
+    max_length_model = ''
+    model_load_path = ''
+    tokenizer_path = ''
+    st.write('Realizar acciones adicionales para la Opción 4')
+
+# Mostrar la imagen cargada si existe
+if imagen_cargada is not None:
+    st.image(imagen_cargada, caption='Imagen cargada', use_column_width=True)
+    st.success("¡Imagen subida con éxito!")
+    # Verifica que todas las variables tengan valor asignado para ejecutar el código
+    if model_type is not None and model_load_path is not None and tokenizer_path is not None and max_length_model is not None:
+        # Tu código a ejecutar si todas las variables no son None
+        descripcion = image_caption(imagen_cargada, model_type, model_load_path, tokenizer_path, max_length_model)
         translation = translator.translate(descripcion, dest='es')
         caption = translation.text
-        # Escribir la descripción generadoa
         st.write(caption)
-
-
+        st.info("Generando audio, por favor espere...")
         language = 'es'
         text = str(caption)
-
         sound_file = BytesIO()
         myobj = gTTS(text=text, lang=language, slow=False)
         myobj.write_to_fp(sound_file)
-
         st.audio(sound_file)
+    else:
+        st.error("Faltan datos para generar la descripción")
 
-    st.write("Ingresa en el [link](https://github.com/GabbyLiz/ic_web)" + " para ver el código completo")
+    # if model_type is None:
+    #     st.info("No hay modelo cargado")
+    # else:
+    #     st.info("Si hay modelo cargado")
 
-# Llamar a tu aplicación
-tu_aplicacion()
+# Botón para iniciar la descarga solo si se selecciona una opción válida y la descarga aún no se ha realizado
+if opcion_descarga != 'Seleccione' and not descarga_realizada:
 
+    if st.sidebar.button(f'Descargar Pesos para {opcion_descarga} desde Google Drive'):
+        with st.spinner('Descargando los pesos...'):
+            # Descargar el archivo desde Google Drive
+            output_file_path = f'pesos_{opcion_descarga.lower()}.hdf5'
+            gdown.download(enlace_google_drive, output_file_path, quiet=False)
+
+            # Obtener el tamaño del archivo después de la descarga
+            file_size_downloaded = os.path.getsize(output_file_path)
+
+            st.success(f'Descarga completa para {opcion_descarga}. Puedes cargar los pesos ahora.')
+            st.info(f'Tamaño original del archivo: {file_size_original / (1024 ** 2):.2f} MB')
+            st.info(f'Tamaño del archivo descargado: {file_size_downloaded / (1024 ** 2):.2f} MB')
+
+
+            # Actualizar la variable de sesión para indicar que la descarga se ha realizado
+            st.session_state.descarga_realizada = True
+
+# Cargar el modelo con los pesos descargados solo si la descarga se ha realizado
+if descarga_realizada and st.sidebar.button('Cargar Modelo con Pesos'):
+    try:
+        # Cargar el modelo con los pesos
+        modelo_cargado = load_model(f'pesos_{opcion_descarga.lower()}.hdf5')
+        st.success('El modelo ya fue descargado exitosamente.')
+
+        # Realizar acciones adicionales con el modelo cargado si es necesario
+        # ...
+    except Exception as e:
+        st.error(f'Error al cargar el modelo: {e}')
