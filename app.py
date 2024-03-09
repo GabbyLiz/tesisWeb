@@ -292,7 +292,6 @@ if descarga_realizada and st.sidebar.button('Cargar Modelo con Pesos'):
         st.error(f'Error al cargar el modelo: {e}')
 
 # Liberar memoria manualmente
-del modelo_cargado
 del imagen_cargada
 del descripcion
 del translation
