@@ -33,13 +33,6 @@ enlace_google_drive2 = 'https://drive.google.com/uc?id=1ZVPsRsKW0Lsd5W0LPG9q-K1y
 # Variable de sesión para realizar un seguimiento del estado de la descarga
 descarga_realizada = st.session_state.get('descarga_realizada', False)
 
-if not os.path.exists('pesos_modelo_1.hdf5'):
-    # Realizar la descarga solo si el archivo no existe localmente
-    gdown.download(enlace_google_drive1, 'pesos_modelo_1.hdf5', quiet=False)
-if not os.path.exists('vgg16.h5'):
-    # Realizar la descarga solo si el archivo no existe localmente
-    gdown.download(enlace_google_drive2, 'vgg16.h5', quiet=False)
-
 # Crear una sección para cargar una imagen de fondo
 background_image = 'logo2.png'  # Ruta de la imagen de fondo
 
