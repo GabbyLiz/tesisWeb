@@ -21,6 +21,14 @@ import base64
 # Libreria para desarrollar aplicaciones con Streamlit
 import streamlit as st
 translator = Translator()
+# Definir 'descripcion' fuera del bloque with
+modelo_cargado = None
+imagen_cargada = None
+descripcion = None
+translation = None
+caption = None
+text = None
+sound_file = None
 model_type = None
 max_length_model = None
 model_load_path = None
@@ -292,6 +300,7 @@ if descarga_realizada and st.sidebar.button('Cargar Modelo con Pesos'):
         st.error(f'Error al cargar el modelo: {e}')
 
 # Liberar memoria manualmente
+del modelo_cargado
 del imagen_cargada
 del descripcion
 del translation
