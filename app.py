@@ -290,3 +290,12 @@ if descarga_realizada and st.sidebar.button('Cargar Modelo con Pesos'):
         # ...
     except Exception as e:
         st.error(f'Error al cargar el modelo: {e}')
+
+# Liberar memoria manualmente
+del modelo_cargado
+del imagen_cargada
+del descripcion
+del translation
+del caption
+del text
+del sound_file
