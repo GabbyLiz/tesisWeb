@@ -27,7 +27,8 @@ model_load_path = None
 tokenizer_path = None
 
 # Enlace compartido de Google Drive al archivo HDF5 (reemplaza 'your_file_id')
-enlace_google_drive = 'https://drive.google.com/uc?id=1FMoVJX2X-pgYV7noOXny6Xnq5lPjJetb'
+enlace_google_drive1 = 'https://drive.google.com/uc?id=1FMoVJX2X-pgYV7noOXny6Xnq5lPjJetb'
+enlace_google_drive2 = 'https://drive.google.com/uc?id=1ZVPsRsKW0Lsd5W0LPG9q-K1yGcPQ069Q'
 
 # Variable de sesión para realizar un seguimiento del estado de la descarga
 descarga_realizada = st.session_state.get('descarga_realizada', False)
@@ -55,13 +56,17 @@ hide_streamlit_style = """
                </style>
                """
 st.markdown(hide_streamlit_style, unsafe_allow_html=True)
-#
+
+def load_vgg16_weights(local_path):
+    model = VGG16(weights=local_path, include_top=True)
+    return model
+
 # Define the CNN model
 def CNNModel(model_type):
     if model_type == 'inceptionv3':
         model = InceptionV3()
     elif model_type == 'vgg16':
-        model = VGG16()
+        model = load_vgg16_weights('vgg16.h5')
     elif model_type == 'resnet50':
         model = ResNet50()
     model.layers.pop()
@@ -174,7 +179,7 @@ st.title("Detección de objetos y semántica de una imagen")
 
 # Obtener el tamaño original del archivo en bytes
 with st.spinner('Obteniendo información del archivo...'):
-    response = requests.head(enlace_google_drive)
+    response = requests.head(enlace_google_drive1)
     file_size_original = int(response.headers['Content-Length'])
 
 
@@ -230,17 +235,18 @@ if imagen_cargada is not None:
     # Verifica que todas las variables tengan valor asignado para ejecutar el código
     if model_type is not None and model_load_path is not None and tokenizer_path is not None and max_length_model is not None:
         # Tu código a ejecutar si todas las variables no son None
-        descripcion = image_caption(imagen_cargada, model_type, model_load_path, tokenizer_path, max_length_model)
-        translation = translator.translate(descripcion, dest='es')
-        caption = translation.text
-        st.write(caption)
-        st.info("Generando audio, por favor espere...")
-        language = 'es'
-        text = str(caption)
-        sound_file = BytesIO()
-        myobj = gTTS(text=text, lang=language, slow=False)
-        myobj.write_to_fp(sound_file)
-        st.audio(sound_file)
+        with st.spinner('Obteniendo información del archivo...'):
+            descripcion = image_caption(imagen_cargada, model_type, model_load_path, tokenizer_path, max_length_model)
+            translation = translator.translate(descripcion, dest='es')
+            caption = translation.text
+            st.write(caption)
+            language = 'es'
+            text = str(caption)
+            sound_file = BytesIO()
+            myobj = gTTS(text=text, lang=language, slow=False)
+            myobj.write_to_fp(sound_file)
+            st.audio(sound_file)
+
     else:
         st.error("Faltan datos para generar la descripción")
 
@@ -255,15 +261,19 @@ if opcion_descarga != 'Seleccione' and not descarga_realizada:
     if st.sidebar.button(f'Descargar Pesos para {opcion_descarga} desde Google Drive'):
         with st.spinner('Descargando los pesos...'):
             # Descargar el archivo desde Google Drive
-            output_file_path = f'pesos_{opcion_descarga.lower()}.hdf5'
-            gdown.download(enlace_google_drive, output_file_path, quiet=False)
+            output_file_path1 = f'pesos_{opcion_descarga.lower()}.hdf5'
+            output_file_path2 = 'vgg16.h5'
+            gdown.download(enlace_google_drive1, output_file_path1, quiet=False)
+            gdown.download(enlace_google_drive2, output_file_path2, quiet=False)
 
             # Obtener el tamaño del archivo después de la descarga
-            file_size_downloaded = os.path.getsize(output_file_path)
+            file_size_downloaded = os.path.getsize(output_file_path1)
+            file_size_downloaded2 = os.path.getsize(output_file_path2)
 
             st.success(f'Descarga completa para {opcion_descarga}. Puedes cargar los pesos ahora.')
-            st.info(f'Tamaño original del archivo: {file_size_original / (1024 ** 2):.2f} MB')
+            #st.info(f'Tamaño original de los archivos: {file_size_original / (1024 ** 2):.2f} MB')
             st.info(f'Tamaño del archivo descargado: {file_size_downloaded / (1024 ** 2):.2f} MB')
+            st.info(f'Tamaño del archivo descargado: {file_size_downloaded2 / (1024 ** 2):.2f} MB')
 
 
             # Actualizar la variable de sesión para indicar que la descarga se ha realizado
