@@ -197,7 +197,7 @@ st.header('_Ingrese una imagen para realizar la descripción:_')
 
 # Crear una barra lateral para las opciones de descarga
 st.sidebar.subheader('Modelos')
-opcion_descarga = st.sidebar.selectbox('Seleccione una opción para escoger el modelo que desea probar:',
+opcion_descarga = st.sidebar.selectbox('Seleccione uno de los siguientes modelos para la detecciónr:',
                                        ['Seleccione', 'Modelo 1', 'Modelo 2', 'Modelo 3','Modelo 4'])
 
 # Añadir un botón para cargar la imagen
