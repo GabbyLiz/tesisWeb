@@ -298,7 +298,8 @@ if descarga_realizada and st.sidebar.button('Cargar Modelo con Pesos'):
         # ...
     except Exception as e:
         st.error(f'Error al cargar el modelo: {e}')
-
+        
+st.write("Ingresa en el [link](https://github.com/GabbyLiz/ic_web)" + " para ver el código completo")
 # Liberar memoria manualmente
 del modelo_cargado
 del imagen_cargada
