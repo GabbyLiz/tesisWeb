@@ -68,8 +68,10 @@ st.markdown(hide_streamlit_style, unsafe_allow_html=True)
 def load_vgg16_weights(local_path):
     model = VGG16(weights=local_path, include_top=True)
     return model
+    
 
 # Define the CNN model
+@st.cache_resource
 def CNNModel(model_type):
     if model_type == 'inceptionv3':
         model = InceptionV3()
@@ -156,7 +158,7 @@ def int_to_word(integer, tokenizer):
         if index == integer:
             return word
     return None
-
+@st.cache_resource
 def image_caption(imagen, model_type, model_load_path, tokenizer_path1, max_length_model):
     # # Cargar el tokenizador
     tokenizer_path = tokenizer_path1
