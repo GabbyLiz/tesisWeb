@@ -65,13 +65,13 @@ hide_streamlit_style = """
                """
 st.markdown(hide_streamlit_style, unsafe_allow_html=True)
 
+@st.cache_resource
 def load_vgg16_weights(local_path):
     model = VGG16(weights=local_path, include_top=True)
     return model
     
 
 # Define the CNN model
-@st.cache_resource
 def CNNModel(model_type):
     if model_type == 'inceptionv3':
         model = InceptionV3()
