@@ -35,8 +35,10 @@ model_load_path = None
 tokenizer_path = None
 
 # Enlace compartido de Google Drive al archivo HDF5 (reemplaza 'your_file_id')
-enlace_google_drive1 = 'https://drive.google.com/uc?id=1FMoVJX2X-pgYV7noOXny6Xnq5lPjJetb'
-enlace_google_drive2 = 'https://drive.google.com/uc?id=1ZVPsRsKW0Lsd5W0LPG9q-K1yGcPQ069Q'
+# https://drive.google.com/file/d/1SVX3YjsKgrEWfWtqt9cp1_KSu4gdzsHc/view?usp=sharing
+enlace_google_drive1 = 'https://drive.google.com/uc?id=1SVX3YjsKgrEWfWtqt9cp1_KSu4gdzsHc'
+# Enlace modelo m14 https://drive.google.com/file/d/1MgUtLW02pamWdCnSccgNsMngZerJxcof/view?usp=sharing
+enlace_google_drive2 = 'https://drive.google.com/uc?id=1MgUtLW02pamWdCnSccgNsMngZerJxcof'
 
 # Variable de sesión para realizar un seguimiento del estado de la descarga
 descarga_realizada = st.session_state.get('descarga_realizada', False)
@@ -209,9 +211,9 @@ imagen_cargada = st.file_uploader('Selecciona una imagen', type=['jpg', 'jpeg', 
 if opcion_descarga == 'Modelo 1':
     # Tu código específico para la opción 1 aquí
     model_type = 'vgg16'
-    max_length_model = 34
+    max_length_model = 51
     model_load_path = 'pesos_modelo 1.hdf5'
-    tokenizer_path = 'tokenizer.pkl'
+    tokenizer_path = 'm14_tokenizer_vgg16_coco.pkl'
     st.write('Realizar acciones adicionales para la Opción 1')
 
 elif opcion_descarga == 'Modelo 2':
