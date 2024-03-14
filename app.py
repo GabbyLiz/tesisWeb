@@ -213,7 +213,7 @@ if opcion_descarga == 'Modelo 1':
     model_type = 'vgg16'
     max_length_model = 51
     model_load_path = 'pesos_modelo 1.hdf5'
-    tokenizer_path = 'm14_tokenizer_vgg16_coco.pkl'
+    tokenizer_path = 'tokenizer.pkl'
     st.write('Realizar acciones adicionales para la Opción 1')
 
 elif opcion_descarga == 'Modelo 2':
